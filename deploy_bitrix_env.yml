@@ -1,0 +1,32 @@
+---
+  - name: "deploy bitrix crm"
+    hosts: crm_test
+    tasks:
+      - name: "test reachability"
+        ping:
+      - name: "install python3 & wget"
+        yum:
+          name: 
+            - python3
+            - wget
+          state: present
+      - name: "download bitrix-env.sh"
+        shell:
+          chdir: ~
+          cmd: wget http://repos.1c-bitrix.ru/yum/bitrix-env.sh
+        notify: 
+          - set bitrix-env.sh to execute
+          - execute bitrix-env.sh
+          - reboot host
+    handlers:
+      - name: "set bitrix-env.sh to execute"
+        file:
+          path: ~/bitrix-env.sh
+          mode: o+x
+      - name: "execute bitrix-env.sh"
+        shell:
+          cmd: echo y | ~/bitrix-env.sh
+      - name: "reboot host"
+        reboot:
+          reboot_timeout: 180
+        notify: execute bitrix-env.sh
